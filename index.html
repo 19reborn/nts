@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NTS: Neural Texture Splatting</title>
+  <meta name="description" content="Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction">
+  <meta name="keywords" content="Novel View Synthesis, 3D Gaussian Splatting, Sparse-view Reconstruction, Dynamic Reconstruction">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- GA -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <!-- CSS (use your local copies to保持一致的样式) -->
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="icon.jpg" sizes="128x128" type="image/png">
+
+  <!-- Minimal utilities to replace <br> spacing -->
+  <style>
+    .mt-3 { margin-top: 1rem !important; }
+    .mt-4 { margin-top: 1.5rem !important; }
+    .mt-5 { margin-top: 2rem !important; }
+    .mt-6 { margin-top: 3rem !important; }
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .is-max-desktop { max-width: 1100px; }
+    .video-frame { position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+    .nts-video { width: 100%; height: auto; display: block; }
+    .image img { border-radius: 12px; }
+    @media (min-width: 1024px) {
+      header.navbar { position: sticky; top: 0; z-index: 30; }
+    }
+  </style>
+
+  <!-- JS (defer to avoid blocking) -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/bulma-carousel.min.js"></script>
+  <script defer src="./static/js/bulma-slider.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+<style>
+.video-frame {
+  position: relative;
+  width: 100%;
+  height: 500px;     
+  overflow: hidden;  
+  border-radius: 10px; /* 可选 */
+}
+
+.nts-video {
+  position: absolute;
+  bottom: 0;       
+  left: 0;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+</style>
+
+</head>
+
+<script>
+(function () {
+  function setupTabs(groupName) {
+    const tabs = Array.from(document.querySelectorAll(`.tabs li[data-group="${groupName}"]`));
+    if (!tabs.length) return;
+
+    // 收集本组所有面板
+    const panelIds = tabs.map(t => t.dataset.target).filter(Boolean);
+    const panels = new Map(panelIds.map(id => [id, document.getElementById(id)]));
+
+    function activate(targetId) {
+      // 1) 切换 tab 激活态
+      tabs.forEach(t => t.classList.toggle('is-active', t.dataset.target === targetId));
+      // 2) 切换对应面板显示，并控制视频播放状态
+      panels.forEach((panel, id) => {
+        if (!panel) return;
+        const active = id === targetId;
+        panel.classList.toggle('is-active', active);
+        panel.hidden = !active;
+        panel.querySelectorAll('video').forEach(v => {
+          if (active) { v.setAttribute('autoplay',''); v.muted = true; v.play().catch(()=>{}); }
+          else { v.pause(); v.removeAttribute('autoplay'); }
+        });
+      });
+    }
+
+    // 如果没有任何 is-active，就默认激活第一个
+    const firstActive = tabs.find(t => t.classList.contains('is-active')) || tabs[0];
+    if (firstActive) activate(firstActive.dataset.target);
+
+    // 绑定事件（li 和内部 a 都能点）
+    tabs.forEach(t => {
+      t.addEventListener('click', e => { e.preventDefault(); activate(t.dataset.target); });
+      t.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', e => { e.preventDefault(); activate(t.dataset.target); });
+      });
+      t.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(t.dataset.target); }
+      });
+    });
+  }
+
+  // DOM 就绪后执行；脚本没加 defer 也能跑
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { setupTabs('metrics'); setupTabs('videos'); });
+  } else {
+    setupTabs('metrics'); setupTabs('videos');
+  }
+})();
+</script>
+
+<body>
+
+<!-- 1) Header / Navbar -->
+<header class="navbar is-spaced" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="#hero" aria-label="Home">Neural Texture Splatting (NTS)</a>
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNav">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </a>
+    </div>
+    <nav id="mainNav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://19reborn.github.io/" title="Homepage">
+          <span class="icon"><i class="fas fa-home" aria-hidden="true"></i></span>
+        </a>
+        <a class="navbar-item" href="#tldr">TL;DR</a>
+        <a class="navbar-item" href="#method">Method</a>
+        <a class="navbar-item" href="#results">Results</a>
+        <a class="navbar-item" href="#bibtex">BibTeX</a>
+        <a class="navbar-item" href="#ack">Acknowledgments</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- 2) Hero (Title, Authors, Badges, Teaser) -->
+<section id="hero" class="hero" style="background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <h1 class="title is-2">
+        Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction
+      </h1>
+
+      <p class="is-size-5 mt-3">
+        <a href="https://19reborn.github.io/">Yiming Wang</a>,
+        <a href="https://taconite.github.io/">Shaofei Wang</a>,
+        <a href="https://markomih.github.io/">Marko Mihajlovic</a>,
+        <a href="https://vlg.inf.ethz.ch/team/Prof-Dr-Siyu-Tang.html">Siyu Tang</a>
+      </p>
+      <p class="is-size-6 has-text-grey">ETH Zurich</p>
+
+      <div class="buttons is-centered mt-4">
+        <!-- <a href="https://arxiv.org/abs/2503.14698" class="button is-dark is-rounded" target="_blank" rel="noopener">
+          <span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span>
+        </a> -->
+        <a href="https://github.com/19reborn/neural-texture-splatting" class="button is-dark is-rounded" target="_blank" rel="noopener">
+          <span class="icon"><i class="fab fa-github"></i></span><span>Code (Release Soon)</span>
+        </a>
+        <!-- 可按需解注释
+        <a class="button is-rounded" href="#"><span class="icon"><i class="fab fa-github"></i></span><span>Code</span></a>
+        <a class="button is-rounded" href="#"><span class="icon"><i class="fab fa-youtube"></i></span><span>Video</span></a>
+        -->
+      </div>
+
+      <figure class="image mt-5">
+        <img src="./static/images/teaser_new.png"
+     alt="Teaser overview of Neural Texture Splatting"
+     width="1600" height="900" loading="eager"
+     style="border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.08);">
+        <figcaption class="has-text-centered mt-3">
+          <strong>Neural Texture Splatting (NTS)</strong> augments 3D Gaussian Splatting (3DGS) with neural RGBA fields per primitive, offering a plug-and-play module that boosts performance across multiple applications. We show that NTS significantly enhances the quality of sparse-view reconstruction for static and dynamic scenes, while also achieving noticeable improvements on geometry reconstruction and novel view synthesis under dense training views.
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 3) TL;DR (from your description distilled) -->
+<section id="tldr" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">TL;DR</h2>
+  <div class="box">
+    <p><strong>Neural Texture Splatting (NTS)</strong> an expressive extension of 3D Gaussian Splatting that introduces a local neural RGBA field for each primitive.</p>
+    <ul class="mt-3">
+    <li>✔ Enhances modeling capacity to capture fine-grained local details as well as view- and temporal-dependent variations</li>
+    <li>✔ Applicable to static and dynamic scenes, under both sparse-view and dense-view configurations</li>
+    </ul>
+  </div>
+  </div>
+</section>
+
+<!-- 4) Method (you didn't include a method figure; keep a TODO placeholder) -->
+<!-- <section id="method" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Method</h2>
+
+    <figure class="image has-text-centered mb-5">
+      <img src="./static/images/overview_cr_final.png"
+           alt="Overview of Neural Texture Splatting"
+           style="max-width:100%; height:auto;">
+      <figcaption class="has-text-centered mt-3">Overview of our Neural Texture Splatting (NTS) framework.</figcaption>
+    </figure>
+
+<div class="content">
+  <ol>
+    Our method enhances 3D Gaussian Splatting (3DGS) by assigning a local RGBA tri-plane texture to each splat. 
+    During rendering, each ray samples the corresponding texture at the ray–splat intersection, and the result is combined 
+    with the original Gaussian attributes via volume rendering.  
+    While this local texture field improves color and opacity representation, it may overfit and fails to capture view- and time-dependent variations. 
+    To address this, we introduce a global tri-plane neural field that models local textures in a compact and shared manner.
+  </ol>
+</div>
+
+  </div>
+</section> -->
+
+<section id="method" class="section">
+  <div class="container is-max-desktop">
+
+    <h2 class="title is-3">Method</h2>
+
+    <figure class="image has-text-centered mb-5">
+      <img src="./static/images/overview_cr_final.png"
+           alt="Overview of Neural Texture Splatting"
+           style="max-width:100%; height:auto;">
+      <figcaption class="has-text-centered mt-3">
+        Overview of our Neural Texture Splatting framework.
+      </figcaption>
+    </figure>
+
+    <div class="content">
+
+      <p>
+        Neural Texture Splatting augments 3D Gaussian Splatting (3DGS) by attaching a
+        <strong>local RGBA tri-plane texture</strong> to each Gaussian primitive.
+      </p>
+
+      <ol>
+        <li>
+          <strong>Local RGBA Textures.</strong>
+          During rendering, each camera ray intersects a splat and samples its local tri-plane texture.
+          The sampled RGBA value is fused with the original Gaussian attributes via volume rendering.
+        </li>
+
+        <li>
+          <strong>Limitation of Local Textures.</strong>
+          Although local textures improve color and opacity modeling, they tend to overfit and cannot
+          represent view-dependent or time-varying effects.
+        </li>
+
+        <li>
+          <strong>Global Tri-plane Field.</strong>
+          To address this, we introduce a global tri-plane neural field that provides compact, shared
+          texture features and regularizes the per-splat textures.
+        </li>
+      </ol>
+
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- 5) Results -->
+<section id="results" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Results</h2>
+
+    <!-- PART 1: Static / Dynamic — -->
+    <h3 class="title is-4 mt-5">Quantitative & Qualitative</h3>
+    <div class="tabs is-toggle is-fullwidth is-medium mt-3" role="tablist" aria-label="Metrics Tabs">
+      <ul>
+        <li class="is-active" data-group="metrics" data-target="metrics-static" role="tab" aria-selected="true"><a>Static</a></li>
+        <li data-group="metrics" data-target="metrics-dynamic" role="tab" aria-selected="false"><a>Dynamic</a></li>
+      </ul>
+    </div>
+
+    <!-- Static panel -->
+    <div id="metrics-static" class="results-panel is-active" role="tabpanel" aria-labelledby="Static">
+      <div class="columns is-variable is-6 is-desktop is-vcentered">
+        <div class="column is-6">
+          <figure class="image">
+            <img src="./static/images/static_table.png" alt="Static scenes quantitative table" loading="lazy">
+            <figcaption class="has-text-centered mt-3 is-size-7">
+              <!-- <strong>Table </strong> Static scenes (PSNR↑ / SSIM↑ / LPIPS↓). -->
+              Dense-view Reconstruction.
+              <!-- <a class="ml-2" href="./static/tables/static_table.csv">CSV</a> -->
+            </figcaption>
+          </figure>
+        </div>
+        <div class="column is-6">
+          <figure class="image">
+            <img src="./static/images/figures_2_new.png" alt="Representative frames (static)" loading="lazy">
+            <figcaption class="has-text-centered mt-3 is-size-7">
+              Qualitative Improvements on MipNeRF360 Dataset.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic panel -->
+    <div id="metrics-dynamic" class="results-panel" role="tabpanel" aria-labelledby="Dynamic" hidden>
+      <div class="columns is-variable is-6 is-desktop is-vcentered">
+        <div class="column is-6">
+          <figure class="image">
+            <img src="./static/images/dynamic_table.png" alt="Dynamic scenes quantitative table" loading="lazy">
+            <figcaption class="has-text-centered mt-3 is-size-7">
+              <!-- <strong>Table D.</strong> Dynamic scenes across benchmarks. -->
+               Dynamic Reconstruction averaged on 4, 6, 8 and 10 views.
+              <!-- <a class="ml-2" href="./static/tables/dynamic_table.csv">CSV</a> -->
+            </figcaption>
+          </figure>
+        </div>
+        <div class="column is-6">
+
+  
+              <figure class="image">
+                <img src="./static/images/figures_6_owlii_6views.png" alt="Additional dynamic results" loading="lazy">
+                <figcaption class="has-text-centered mt-3 is-size-7">
+                  <!-- <strong>Fig. D2.</strong> Additional dynamic reconstruction examples. -->
+                  Qualitative Results on 4 and 6 views.
+
+                </figcaption>
+              </figure>
+
+
+              <figure class="image mb-4">
+                <img src="./static/images/figures_4_new.png" alt="Representative frames (dynamic)" loading="lazy">
+                <figcaption class="has-text-centered mt-3 is-size-7">
+                  <!-- <strong>Fig. D1.</strong> Fewer temporal artifacts; sharper motion boundaries. -->
+                   Qualitative Results on 10 views.
+                </figcaption>
+              </figure>
+
+            </div>
+      </div>
+    </div>
+
+    <!-- PART 2: 四个视频，可切换 -->
+    <h3 class="title is-4 mt-6">Video Comparisons</h3>
+    <div class="tabs is-toggle is-fullwidth is-medium mt-3" role="tablist" aria-label="Video Tabs">
+      <ul>
+        <li class="is-active" data-group="videos" data-target="vid-geometry" role="tab" aria-selected="true"><a>Geometry</a></li>
+        <li data-group="videos" data-target="vid-dynamic" role="tab" aria-selected="false"><a>Dynamic</a></li>
+        <li data-group="videos" data-target="vid-sparse" role="tab" aria-selected="false"><a>Sparse-view</a></li>
+        <li data-group="videos" data-target="vid-dense" role="tab" aria-selected="false"><a>Dense-view</a></li>
+      </ul>
+    </div>
+
+    <div id="vid-geometry" class="results-panel is-active" role="tabpanel">
+      <div class="video-frame">
+        <video class="nts-video" muted loop playsinline preload="metadata" poster="./static/thumbs/geometry.jpg">
+          <source src="./static/videos/geometry.mp4#t=0.1" type="video/mp4">
+        </video>
+      </div>
+      <p class="has-text-centered is-size-7 mt-2">Geometry Reconstruction</p>
+    </div>
+    
+    <div id="vid-dynamic" class="results-panel" role="tabpanel" hidden>
+      <div class="video-frame">
+        <video class="nts-video" muted loop playsinline preload="metadata" poster="./static/thumbs/dynamic.jpg">
+          <source src="./static/videos/dynamic_new.mp4#t=0.1" type="video/mp4">
+        </video>
+      </div>
+      <p class="has-text-centered is-size-7 mt-2">Dynamic Scenes</p>
+    </div>
+
+    <div id="vid-sparse" class="results-panel" role="tabpanel" hidden>
+      <div class="video-frame">
+        <!-- <video class="nts-video" muted loop playsinline preload="metadata" poster="./static/thumbs/sparse.jpg">
+          <source src="./static/videos/sparse_view.mp4#t=0.1" type="video/mp4">
+        </video> -->
+       <video id="vid-sparse-video" class="nts-video" muted loop playsinline preload="metadata"
+        poster="./static/thumbs/sparse.jpg">
+        <source src="./static/videos/sparse_view.mp4#t=0.1" type="video/mp4">
+      </video>
+
+      <script>
+        const video = document.getElementById("vid-sparse-video");
+        video.playbackRate = 1.5; // 播放速度减半，相当于“fps”减半
+      </script>
+      </div>
+      <p class="has-text-centered is-size-7 mt-2">Sparse-View NVS</p>
+    </div>
+
+    <div id="vid-dense" class="results-panel" role="tabpanel" hidden>
+      <div class="video-frame">
+        <video class="nts-video" muted loop playsinline preload="metadata" poster="./static/thumbs/dense.jpg">
+          <source src="./static/videos/dense_view_nvs.mp4#t=0.1" type="video/mp4">
+        </video>
+      </div>
+      <p class="has-text-centered is-size-7 mt-2">Dense-View NVS</p>
+    </div>
+
+
+
+
+
+  </div>
+</section>
+
+
+<!-- 6) BibTeX (use your latest content) -->
+<!-- <section id="bibtex" class="section">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">BibTeX</h2>
+<pre><code>@article{Wang2025NTS,
+  author    = {Yiming Wang and Shaofei Wang and Marko Mihajlovic and Siyu Tang},
+  title     = {Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction},
+  year      = {2025},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  booktitle = {ACM SIGGRAPH Asia 2025 Conference Proceedings},
+  series    = {SIGGRAPH Asia '25},
+}
+</code></pre>
+  </div>
+</section> -->
+
+<!-- 7) Acknowledgments & Footer -->
+<section id="ack" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Acknowledgments</h2>
+    <p class="content">We would like to express our gratitude to Brian Chao and Qin Han for their helpful discussions.</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p class="is-size-7">
+            Template adapted from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Tiny JS: burger + reduced-motion-safe autoplay -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Bulma navbar burger
+    const burgers = Array.from(document.querySelectorAll('.navbar-burger'));
+    burgers.forEach(b => {
+      b.addEventListener('click', () => {
+        const target = document.getElementById(b.dataset.target);
+        b.classList.toggle('is-active');
+        target.classList.toggle('is-active');
+      });
+    });
+
+    // Respect prefers-reduced-motion
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('video.nts-video').forEach(v => {
+      if (!reduce) { v.setAttribute('autoplay', ''); v.play().catch(()=>{}); }
+    });
+  });
+</script>
+
+</body>
+</html>

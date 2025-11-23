@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction">
+  <meta name="keywords" content="Novel View Synthesis, 3D Gaussian Splatting, Sparse-view Reconstruction, Dynamic Reconstruction">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <title>Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction</title> -->
+  <title>NTS: Neural Texture Splatting</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <!-- <link rel="icon" href="./static/images/favicon.svg"> -->
+  <!-- <link rel="icon" href="./static/images/ICON.webp"> -->
+  <link rel="icon" href="./static/images/icon.png">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://19reborn.github.io/">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+    </div>
+
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://19reborn.github.io/">Yiming Wang</a>,</span>
+            <span class="author-block">
+              <a href="https://taconite.github.io/">Shaofei Wang</a>,
+            </span>
+            <span class="author-block">
+              <a href="https://markomih.github.io/">Marko Mihajlovic</a>,
+            </span>
+            <span class="author-block">
+              <a href="https://vlg.inf.ethz.ch/team/Prof-Dr-Siyu-Tang.html">Siyu Tang</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">ETH Zurich</span>
+          </div>
+
+
+          
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2503.14698"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+              <!-- <span class="link-block">
+                <a href="https://youtu.be/DXQO4E-ShbI"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+              <!-- Code Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/19reborn/PICT_smoke"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+            </div> -->
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="media-row1">
+        <!-- First Video -->
+        <!-- Teaser Image -->
+        <img src="./static/images/teaser_new.png" alt="Teaser image of NTS">
+      </div>
+      <br>
+      <figcaption class="figure-caption has-text-centered">
+        \textbf{Neural Texture Splatting (NTS)} augments 3D Gaussian Splatting (3DGS) with neural RGBA fields per primitive, offering a plug-and-play module that boosts performance across multiple applications. 
+  We show that NTS significantly enhances the quality of sparse-view reconstruction for static and dynamic scenes, while also achieving noticeable improvements on geometry reconstruction and
+    novel view synthesis under dense training views.
+      </figcaption>
+      <br><br><br><br>
+
+      <!-- <h3 class="title is-4">History-Aware Streaming Reconstruction  <strong style="color: green;">w/o Temporal Training & Test-time Optimization</strong></h3>
+      <div class="video-wrapper">
+        <video class="cropped-video" autoplay muted loop playsinline>
+          <source src="./static/videos/gslrm_vs_ours.mp4" type="video/mp4">
+        </video>
+      </div>
+      
+      <style>
+        .video-wrapper {
+          height: 400px; /* Match the height of the video */
+          overflow: hidden; /* Hide the overflow */
+          position: relative; /* Enable positioning for the video */
+          margin-bottom: 00px; /* Add space below the video */
+        }
+      
+        .cropped-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          position: absolute; /* Position the video absolutely within the wrapper */
+          top: -30px;
+          left: 0;
+        }
+      </style> -->
+
+      <h3 class="title is-3">NTS Consistently enhances 3DGS-based methods in different setups</h3>
+      <br>
+      <div style="text-align: center;">
+        <img src="./static/images/figures_2_new.png" width="80%" />
+    </div>
+      <div style="text-align: center;">
+        <img src="./static/images/figures_4_new.png" width="80%" />
+    </div>
+    <br>
+
+      <!-- Final Image with reduced size and white space -->
+      <!-- <img src="./static/images/baseline_full.png" alt="Teaser image of NTS" class="final-image" /> -->
+    </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+
+<br> <br> <br>
+
+<section class="hero comparison">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+
+      <h2 class="title is-3">Comparison with Exisiting Novel View Synthesis Methods </h2>
+
+        <br>
+        <!-- Teaser Image -->
+        <img src="./static/images/static_table.png" alt="Teaser image of NTS" class="'center" />
+        <br><br><br>
+
+      <figure>
+        <video id="nv3d_cmp" autoplay muted loop playsinline width="100%">
+          <source src="./static/videos/geometry.mp4" type="video/mp4">
+        </video>
+        <br><br><br>
+        <video id="corgi_cmp" autoplay muted loop playsinline width="100%">
+          <source src="./static/videos/sparse_view.mp4" type="video/mp4">
+        </video>
+        <video id="corgi_cmp" autoplay muted loop playsinline width="100%">
+          <source src="./static/videos/dynamic_new.mp4" type="video/mp4">
+        </video>
+        <video id="corgi_cmp" autoplay muted loop playsinline width="100%">
+          <source src="./static/videos/dense_view_nvs.mp4" type="video/mp4">
+        </video>
+        <!-- <figcaption class="has-text-justified">
+          We compare our method with state-of-the-art approaches.
+        </figcaption> -->
+      </figure>
+
+  </div>
+</section>
+
+
+
+
+
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{Wang2025NTS,
+author = {Yiming Wang, Shaofei Wang, Marko Mihajlovic and Siyu Tang},
+title = {Neural Texture Splatting: Expressive 3D Gaussian Splatting for View Synthesis, Geometry, and Dynamic Reconstruction},
+year = {2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+booktitle = {ACM SIGGRAPH 2025 Conference Proceedings},
+series = {SIGGRAPH '25},
+}
+    </code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <!-- <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div> -->
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          The website template is borrowed from <a
+          href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+          <!-- <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            This means you are free to borrow the <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
+            we just ask that you link back to this page in the footer.
+            Please remember to remove the analytics code included in the header of the website which
+            you do not want on your website.
+          </p> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
